@@ -31,12 +31,13 @@ io.on('connection', (socket) => {
     generateMessage('Admin', 'new user joined')
   )
 
-  socket.on('createMessage', (message) => {
+  socket.on('createMessage', (message, callback) => {
     console.log('createMessage:', message)
     io.emit(
       'newMessage',
       generateMessage(message.from, message.text)
     )
+    typeof callback === 'function' && callback('this is from the server')
   })
 })
 
