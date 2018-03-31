@@ -1,4 +1,4 @@
-const socket = io()
+var socket = io()
 socket.on('connect', () => {
   console.log('connected to server')
 })
@@ -8,17 +8,9 @@ socket.on('disconnect', () => {
 })
 
 socket.on('newMessage', (data) => {
-  console.log('New Email: ', data)
-  const li = $('<li></li>')
+  var li = $('<li></li>')
   li.text(`${data.from}: ${data.text}`)
   $('#messages').append(li)
-})
-
-socket.emit('createMessage', {
-  from: 'Hoss',
-  text: 'hi there'
-}, (ackData) => {
-  console.log('Got Acknowledgment', ackData)
 })
 
 socket.on('newLocationMessage', (message) => {
@@ -32,12 +24,12 @@ socket.on('newLocationMessage', (message) => {
 
 $('#message-form').on('submit', (e) => {
   e.preventDefault()
+  var messageTextBox =  $('[name=message]')
   socket.emit('createMessage', {
     from: 'User',
-    text: $('[name=message]').val()
+    text: messageTextBox.val()
   }, () => {
-    $('[name=message]').val('')
-
+    messageTextBox.val('')
   })
 })
 
@@ -46,13 +38,15 @@ locationBtn.on('click', () => {
   if (!navigator.geolocation) {
     return alert('Geolocation not supported by your browser')
   }
+  locationBtn.attr('disabled', 'disabled').text('Sending location...')
   navigator.geolocation.getCurrentPosition(function(position) {
     socket.emit('createLocationMessage', {
       lat: position.coords.latitude,
       lng: position.coords.longitude
     })
-    console.log(position)
+    locationBtn.removeAttr('disabled').text('Send location')
   }, function() {
     alert('Unable to fetch location')
+    locationBtn.removeAttr('disabled').text('Send location')
   })
 })

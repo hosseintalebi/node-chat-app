@@ -37,7 +37,7 @@ io.on('connection', (socket) => {
       'newMessage',
       generateMessage(message.from, message.text)
     )
-    typeof callback === 'function' && callback('this is from the server')
+    typeof callback === 'function' && callback()
   })
 
   socket.on('createLocationMessage', (coords) => {
