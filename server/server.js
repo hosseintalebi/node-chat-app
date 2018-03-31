@@ -16,7 +16,6 @@ app.use(express.static(PUBLIC_PATH))
 
 io.on('connection', (socket) => {
   console.log('new user connected')
-
   socket.on('disconnect', () => {
     console.log('disconnect from server')
   })
@@ -32,7 +31,6 @@ io.on('connection', (socket) => {
   )
 
   socket.on('createMessage', (message, callback) => {
-    console.log('createMessage:', message)
     io.emit(
       'newMessage',
       generateMessage(message.from, message.text)
