@@ -4,7 +4,7 @@ const express = require('express')
 const socketIO = require('socket.io')
 
 const { generateMessage, generateLocationMessage } = require('./utils/message')
-
+const { isRealString } = require('./utils/validation.js')
 const PUBLIC_PATH = path.join(__dirname, '../public')
 const PORT = process.env.PORT || 3000
 
@@ -20,16 +20,24 @@ io.on('connection', (socket) => {
     console.log('disconnect from server')
   })
 
-  socket.emit(
-    'newMessage',
-    generateMessage('Admin', 'Welcome to the chat app')
-  )
+  socket.on('join', (params, callback) => {
+    if (!isRealString(params.name) || !isRealString(params.room)) {
+      callback('Name and room name are required')
+      return
+    }
+    socket.join(params.room)
 
-  socket.broadcast.emit(
-    'newMessage',
-    generateMessage('Admin', 'new user joined')
-  )
+    socket.emit(
+      'newMessage',
+      generateMessage('Admin', 'Welcome to the chat app')
+    )
 
+    socket.broadcast.to(params.room).emit(
+      'newMessage',
+      generateMessage('Admin', `${params.name} has joined`)
+    )
+    callback()
+  })
   socket.on('createMessage', (message, callback) => {
     io.emit(
       'newMessage',
