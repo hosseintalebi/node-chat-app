@@ -5,19 +5,26 @@ const socketIO = require('socket.io')
 
 const { generateMessage, generateLocationMessage } = require('./utils/message')
 const { isRealString } = require('./utils/validation.js')
+const { Users } = require('./utils/users')
+
 const PUBLIC_PATH = path.join(__dirname, '../public')
 const PORT = process.env.PORT || 3000
 
 const app = express()
 const server = http.createServer(app)
 const io = socketIO(server)
+const users = new Users()
 
 app.use(express.static(PUBLIC_PATH))
 
 io.on('connection', (socket) => {
   console.log('new user connected')
   socket.on('disconnect', () => {
-    console.log('disconnect from server')
+    const user = users.removeUser(socket.id)
+    if (user) {
+      io.to(user.room).emit('updateUserList', users.getUserList(user.room))
+      io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left`))
+    }
   })
 
   socket.on('join', (params, callback) => {
@@ -26,7 +33,9 @@ io.on('connection', (socket) => {
       return
     }
     socket.join(params.room)
-
+    users.removeUser(socket.id)
+    users.addUser(socket.id, params.name, params.room)
+    io.to(params.room).emit('updateUserList', users.getUserList(params.room))
     socket.emit(
       'newMessage',
       generateMessage('Admin', 'Welcome to the chat app')
