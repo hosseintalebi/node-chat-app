@@ -48,15 +48,21 @@ io.on('connection', (socket) => {
     callback()
   })
   socket.on('createMessage', (message, callback) => {
-    io.emit(
-      'newMessage',
-      generateMessage(message.from, message.text)
-    )
+    const user = users.getUser(socket.id)
+    if (user && isRealString(message.text)) {
+      io.to(user.room).emit(
+        'newMessage',
+        generateMessage(user.name, message.text)
+      )
+    }
     typeof callback === 'function' && callback()
   })
 
   socket.on('createLocationMessage', (coords) => {
-    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.lat, coords.lng))
+    const user = users.getUser(socket.id)
+    if (user) {
+      io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.lat, coords.lng))
+    }
   })
 })
 

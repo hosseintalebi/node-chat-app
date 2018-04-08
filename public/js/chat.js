@@ -24,8 +24,6 @@ socket.on('connect', () => {
     if (err) {
       window.location.href = '/'
       alert(err)
-    } else {
-      console.log('No error')
     }
   })
 })
@@ -35,7 +33,6 @@ socket.on('disconnect', () => {
 })
 
 socket.on('updateUserList', function(users) {
-  console.log(users)
   var ol = $('<ol></ol>')
   users.forEach(function(user) {
     ol.append($('<li></li>').text(user))
@@ -71,7 +68,6 @@ $('#message-form').on('submit', (e) => {
   e.preventDefault()
   var messageTextBox =  $('[name=message]')
   socket.emit('createMessage', {
-    from: 'User',
     text: messageTextBox.val()
   }, () => {
     messageTextBox.val('')
